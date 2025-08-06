@@ -1,0 +1,12 @@
+{
+  "name": "registro-votacion",
+  "version": "1.0.0",
+  "description": "Sistema de registro de votación",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

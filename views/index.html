@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Registro de Votación</title>
+  <script>
+    async function buscar() {
+      const id = document.getElementById("id").value;
+      const res = await fetch("/buscar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      const result = document.getElementById("resultado");
+      if (data.encontrado) {
+        result.innerHTML = `${data.nombre} - Ya votó: ${data.voto ? "✅" : "❌"}`;
+        if (!data.voto) {
+          document.getElementById("btnMarcar").style.display = "inline";
+        } else {
+          document.getElementById("btnMarcar").style.display = "none";
+        }
+      } else {
+        result.innerHTML = "No encontrado";
+        document.getElementById("btnMarcar").style.display = "none";
+      }
+    }
+
+    async function marcar() {
+      const id = document.getElementById("id").value;
+      const res = await fetch("/marcar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        alert("Marcado como votado");
+        buscar(); // Actualizar estado
+      } else {
+        alert("Error al marcar");
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Registro de Votación</h1>
+  <input type="text" id="id" placeholder="Ingrese RUT o ID" />
+  <button onclick="buscar()">Buscar</button>
+  <div id="resultado"></div>
+  <button id="btnMarcar" onclick="marcar()" style="display:none">Marcar como votado</button>
+</body>
+</html>

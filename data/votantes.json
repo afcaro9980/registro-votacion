@@ -1,0 +1,4 @@
+[
+  { "id": "12345678-9", "nombre": "Ana Pérez", "voto": false },
+  { "id": "98765432-1", "nombre": "Juan Soto", "voto": false }
+]
