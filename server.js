@@ -9,7 +9,6 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Configurar almacenamiento para uploads
 const upload = multer({ dest: "uploads/" });
 
 app.get("/", (req, res) => {
@@ -21,18 +20,19 @@ app.post("/buscar", (req, res) => {
   const votantes = JSON.parse(fs.readFileSync("./data/votantes.json"));
   const persona = votantes.find(p => p.id === id);
   if (persona) {
-    res.json({ encontrado: true, nombre: persona.nombre, voto: persona.voto });
+    res.json({ encontrado: true, nombre: persona.nombre, voto: persona.voto, opcion: persona.opcion || null });
   } else {
     res.json({ encontrado: false });
   }
 });
 
 app.post("/marcar", (req, res) => {
-  const { id } = req.body;
+  const { id, opcion } = req.body;
   let votantes = JSON.parse(fs.readFileSync("./data/votantes.json"));
   const index = votantes.findIndex(p => p.id === id);
   if (index !== -1) {
     votantes[index].voto = true;
+    votantes[index].opcion = opcion;
     fs.writeFileSync("./data/votantes.json", JSON.stringify(votantes, null, 2));
     res.json({ ok: true });
   } else {

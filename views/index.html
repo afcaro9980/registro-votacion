@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <title>Registro de Votación</title>
   <script>
+    let personaEncontrada = false;
+
     async function buscar() {
       const id = document.getElementById("id").value;
       const res = await fetch("/buscar", {
@@ -14,31 +16,37 @@
       const data = await res.json();
       const result = document.getElementById("resultado");
       if (data.encontrado) {
+        personaEncontrada = true;
         result.innerHTML = `${data.nombre} - Ya votó: ${data.voto ? "✅" : "❌"}`;
         if (!data.voto) {
-          document.getElementById("btnMarcar").style.display = "inline";
+          document.getElementById("opcionesVoto").style.display = "block";
         } else {
-          document.getElementById("btnMarcar").style.display = "none";
+          document.getElementById("opcionesVoto").style.display = "none";
         }
       } else {
+        personaEncontrada = false;
         result.innerHTML = "No encontrado";
-        document.getElementById("btnMarcar").style.display = "none";
+        document.getElementById("opcionesVoto").style.display = "none";
       }
     }
 
-    async function marcar() {
+    async function votar() {
+      if (!personaEncontrada) return alert("Debes buscar un ID válido primero.");
       const id = document.getElementById("id").value;
+      const opcion = document.querySelector('input[name="opcion"]:checked');
+      if (!opcion) return alert("Debes seleccionar una opción.");
+
       const res = await fetch("/marcar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ id, opcion: opcion.value })
       });
       const data = await res.json();
       if (data.ok) {
-        alert("Marcado como votado");
-        buscar(); // Actualizar estado
+        alert("Voto registrado");
+        buscar(); // actualizar estado
       } else {
-        alert("Error al marcar");
+        alert("Error al votar");
       }
     }
   </script>
@@ -48,7 +56,13 @@
   <input type="text" id="id" placeholder="Ingrese RUT o ID" />
   <button onclick="buscar()">Buscar</button>
   <div id="resultado"></div>
-  <button id="btnMarcar" onclick="marcar()" style="display:none">Marcar como votado</button>
+
+  <div id="opcionesVoto" style="display:none; margin-top:15px;">
+    <h3>¿Está a favor del paro en la facultad?</h3>
+    <label><input type="radio" name="opcion" value="Sí"> Sí</label>
+    <label><input type="radio" name="opcion" value="No"> No</label><br><br>
+    <button onclick="votar()">Votar</button>
+  </div>
 
   <hr>
   <h2>Cargar votantes desde Excel</h2>
