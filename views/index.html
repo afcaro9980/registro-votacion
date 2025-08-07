@@ -4,6 +4,20 @@
   <meta charset="utf-8" />
   <title>Registro de Votación</title>
   <script>
+
+    async function cargarCarreras() {
+      const res = await fetch("/carreras");
+      const data = await res.json();
+      const select = document.getElementById("carrera-manual");
+      select.innerHTML = "";
+      data.forEach(carrera => {
+        const opt = document.createElement("option");
+        opt.value = carrera;
+        opt.textContent = carrera;
+        select.appendChild(opt);
+      });
+    }
+    window.onload = cargarCarreras;
     let personaEncontrada = false;
 
     async function buscar() {
@@ -114,12 +128,10 @@
   <input type="password" id="clave-manual" placeholder="Ingrese contraseña" />
   <br><br>
   <label for="carrera-manual">Carrera:</label>
-  <select id="carrera-manual">
-    <option value="Ingeniería Naval">Ingeniería Naval</option>
+<select id="carrera-manual"></select>
     <option value="Derecho">Derecho</option>
     <option value="Psicología">Psicología</option>
     <option value="Arquitectura">Arquitectura</option>
-    <option value="Otra">Otra</option>
   </select>
   <br><br>
   <label>Opción:</label>

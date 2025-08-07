@@ -115,7 +115,15 @@ app.post("/voto-manual", (req, res) => {
   res.json({ ok: true });
 });
 
+
+app.get("/carreras", (req, res) => {
+  const votantes = JSON.parse(fs.readFileSync("./data/votantes.json"));
+  const carrerasUnicas = [...new Set(votantes.map(v => v.carrera || "Sin carrera"))].sort();
+  res.json(carrerasUnicas);
+});
+
 app.listen(port, () => {
+
 
   console.log(`Servidor en puerto ${port}`);
 });
