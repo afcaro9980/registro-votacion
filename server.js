@@ -51,7 +51,7 @@ app.post("/cargar-excel", upload.single("archivo"), (req, res) => {
   data.forEach(row => {
     if (row.id && row.nombre) {
       if (!votantes.some(p => p.id === row.id)) {
-        votantes.push({ id: row.id, nombre: row.nombre, voto: false });
+        votantes.push({ id: row.id, nombre: row.nombre, carrera: row.carrera || "", voto: false });
       }
     }
   });
