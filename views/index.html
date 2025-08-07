@@ -108,5 +108,58 @@
   <input type="password" id="clave" placeholder="Ingrese contraseña" />
   <button onclick="verResultados()">Mostrar Resultados</button>
   <div id="resultados"></div>
+
+  <hr>
+  <h2>Agregar voto manualmente</h2>
+  <input type="password" id="clave-manual" placeholder="Ingrese contraseña" />
+  <br><br>
+  <label for="carrera-manual">Carrera:</label>
+  <select id="carrera-manual">
+    <option value="Ingeniería Naval">Ingeniería Naval</option>
+    <option value="Derecho">Derecho</option>
+    <option value="Psicología">Psicología</option>
+    <option value="Arquitectura">Arquitectura</option>
+    <option value="Otra">Otra</option>
+  </select>
+  <br><br>
+  <label>Opción:</label>
+  <label><input type="radio" name="opcion-manual" value="Sí"> Sí</label>
+  <label><input type="radio" name="opcion-manual" value="No"> No</label>
+  <label><input type="radio" name="opcion-manual" value="Nulo"> Nulo</label>
+  <br><br>
+  <button onclick="agregarVotoManual()">Agregar voto</button>
+  <div id="mensaje-manual"></div>
+
+  <script>
+    async function agregarVotoManual() {
+      const clave = document.getElementById("clave-manual").value;
+      const carrera = document.getElementById("carrera-manual").value;
+      const opcion = document.querySelector('input[name="opcion-manual"]:checked');
+      const mensaje = document.getElementById("mensaje-manual");
+
+      if (!clave || !opcion) {
+        mensaje.innerText = "Debe ingresar la clave y seleccionar una opción.";
+        return;
+      }
+
+      const res = await fetch("/voto-manual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clave,
+          carrera,
+          opcion: opcion.value
+        })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        mensaje.innerText = "✅ Voto agregado correctamente.";
+      } else {
+        mensaje.innerText = "❌ Clave incorrecta o error al registrar.";
+      }
+    }
+  </script>
+
 </body>
 </html>

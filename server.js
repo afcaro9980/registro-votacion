@@ -97,6 +97,25 @@ app.post("/resultados", (req, res) => {
 });
 
 const port = process.env.PORT || 3000;
+
+app.post("/voto-manual", (req, res) => {
+  const { clave, carrera, opcion } = req.body;
+  if (clave !== "caf") return res.json({ ok: false });
+
+  let votantes = JSON.parse(fs.readFileSync("./data/votantes.json"));
+  votantes.push({
+    id: `manual-${Date.now()}`,
+    nombre: "Manual",
+    carrera,
+    voto: true,
+    opcion
+  });
+
+  fs.writeFileSync("./data/votantes.json", JSON.stringify(votantes, null, 2));
+  res.json({ ok: true });
+});
+
 app.listen(port, () => {
+
   console.log(`Servidor en puerto ${port}`);
 });
