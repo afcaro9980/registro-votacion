@@ -92,6 +92,17 @@
       return;
     }
     document.getElementById("resultados").innerHTML = `
+if (data.autorizado && data.carreras) {
+      const contenedor = document.getElementById("resultados");
+      const tabla = document.createElement("table");
+      tabla.border = "1";
+      tabla.innerHTML = "<tr><th>Carrera</th><th>Sí (%)</th><th>No (%)</th><th>Total votos</th></tr>";
+      for (const carrera in data.carreras) {
+        const c = data.carreras[carrera];
+        tabla.innerHTML += `<tr><td>${carrera}</td><td>${c.porcentaje_si}</td><td>${c.porcentaje_no}</td><td>${c.total}</td></tr>`;
+      }
+      contenedor.appendChild(tabla);
+    }
       <p><strong>Total de votos:</strong> ${data.total}</p>
       <p>✅ Sí: ${data.si} (${data.porcentaje_si}%)</p>
       <p>❌ No: ${data.no} (${data.porcentaje_no}%)</p>

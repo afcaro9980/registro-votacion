@@ -76,6 +76,35 @@ app.post("/resultados", (req, res) => {
   const porcentaje_si = total ? ((si / total) * 100).toFixed(2) : 0;
   const porcentaje_no = total ? ((no / total) * 100).toFixed(2) : 0;
 
+  const carreras = {};
+  votos.forEach(v => {
+    const carrera = v.carrera || "Sin carrera";
+    if (!carreras[carrera]) carreras[carrera] = { si: 0, no: 0, total: 0 };
+    if (v.opcion === "Sí") carreras[carrera].si++;
+    if (v.opcion === "No") carreras[carrera].no++;
+    carreras[carrera].total++;
+  });
+
+  for (const carrera in carreras) {
+    const c = carreras[carrera];
+    c.porcentaje_si = c.total ? ((c.si / c.total) * 100).toFixed(2) : "0.00";
+    c.porcentaje_no = c.total ? ((c.no / c.total) * 100).toFixed(2) : "0.00";
+  }
+
+  res.json({ autorizado: true, total, si, no, porcentaje_si, porcentaje_no, carreras });
+});          
+  const { clave } = req.body;
+  if (clave !== "caf") return res.json({ autorizado: false });
+
+  const votantes = JSON.parse(fs.readFileSync("./data/votantes.json"));
+  const votos = votantes.filter(v => v.voto);
+  const total = votos.length;
+  const si = votos.filter(v => v.opcion === "Sí").length;
+  const no = votos.filter(v => v.opcion === "No").length;
+
+  const porcentaje_si = total ? ((si / total) * 100).toFixed(2) : 0;
+  const porcentaje_no = total ? ((no / total) * 100).toFixed(2) : 0;
+
   res.json({ autorizado: true, total, si, no, porcentaje_si, porcentaje_no });
 });
 
