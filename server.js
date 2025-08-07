@@ -62,6 +62,24 @@ app.post("/cargar-excel", upload.single("archivo"), (req, res) => {
 });
 
 const port = process.env.PORT || 3000;
+
+app.post("/resultados", (req, res) => {
+  const { clave } = req.body;
+  if (clave !== "caf") return res.json({ autorizado: false });
+
+  const votantes = JSON.parse(fs.readFileSync("./data/votantes.json"));
+  const votos = votantes.filter(v => v.voto);
+  const total = votos.length;
+  const si = votos.filter(v => v.opcion === "Sí").length;
+  const no = votos.filter(v => v.opcion === "No").length;
+
+  const porcentaje_si = total ? ((si / total) * 100).toFixed(2) : 0;
+  const porcentaje_no = total ? ((no / total) * 100).toFixed(2) : 0;
+
+  res.json({ autorizado: true, total, si, no, porcentaje_si, porcentaje_no });
+});
+
+
 app.listen(port, () => {
   console.log(`Servidor en puerto ${port}`);
 });

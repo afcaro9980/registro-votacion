@@ -72,4 +72,29 @@
   </form>
   <p><strong>Formato:</strong> columnas <code>id</code> y <code>nombre</code></p>
 </body>
-</html>
+</html><hr>
+<h2>Ver Resultados de la Votación</h2>
+<input type="password" id="clave" placeholder="Ingrese contraseña" />
+<button onclick="verResultados()">Mostrar Resultados</button>
+<div id="resultados"></div>
+
+<script>
+  async function verResultados() {
+    const clave = document.getElementById("clave").value;
+    const res = await fetch("/resultados", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clave })
+    });
+    const data = await res.json();
+    if (!data.autorizado) {
+      alert("Contraseña incorrecta");
+      return;
+    }
+    document.getElementById("resultados").innerHTML = `
+      <p><strong>Total de votos:</strong> ${data.total}</p>
+      <p>✅ Sí: ${data.si} (${data.porcentaje_si}%)</p>
+      <p>❌ No: ${data.no} (${data.porcentaje_no}%)</p>
+    `;
+  }
+</script>
