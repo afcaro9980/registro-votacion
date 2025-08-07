@@ -49,5 +49,13 @@
   <button onclick="buscar()">Buscar</button>
   <div id="resultado"></div>
   <button id="btnMarcar" onclick="marcar()" style="display:none">Marcar como votado</button>
+
+  <hr>
+  <h2>Cargar votantes desde Excel</h2>
+  <form action="/cargar-excel" method="post" enctype="multipart/form-data">
+    <input type="file" name="archivo" accept=".xlsx" required />
+    <button type="submit">Cargar Excel</button>
+  </form>
+  <p><strong>Formato:</strong> columnas <code>id</code> y <code>nombre</code></p>
 </body>
 </html>
