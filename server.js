@@ -72,14 +72,17 @@ app.post("/resultados", (req, res) => {
   const no = votos.filter(v => v.opcion === "No").length;
 
   const porcentaje_si = total ? ((si / total) * 100).toFixed(2) : 0;
+  const nulo = votos.filter(v => v.opcion === "Nulo").length;
   const porcentaje_no = total ? ((no / total) * 100).toFixed(2) : 0;
+  const porcentaje_nulo = total ? ((nulo / total) * 100).toFixed(2) : 0;
 
   const carreras = {};
   votos.forEach(v => {
     const carrera = v.carrera || "Sin carrera";
-    if (!carreras[carrera]) carreras[carrera] = { si: 0, no: 0, total: 0 };
+    if (!carreras[carrera]) carreras[carrera] = { si: 0, no: 0, nulo: 0, total: 0 };
     if (v.opcion === "Sí") carreras[carrera].si++;
     if (v.opcion === "No") carreras[carrera].no++;
+    if (v.opcion === "Nulo") carreras[carrera].nulo++;
     carreras[carrera].total++;
   });
 
@@ -87,9 +90,10 @@ app.post("/resultados", (req, res) => {
     const c = carreras[carrera];
     c.porcentaje_si = c.total ? ((c.si / c.total) * 100).toFixed(2) : "0.00";
     c.porcentaje_no = c.total ? ((c.no / c.total) * 100).toFixed(2) : "0.00";
+    c.porcentaje_nulo = c.total ? ((c.nulo / c.total) * 100).toFixed(2) : "0.00";
   }
 
-  res.json({ autorizado: true, total, si, no, porcentaje_si, porcentaje_no, carreras });
+  res.json({ autorizado: true, total, si, no, nulo, porcentaje_si, porcentaje_no, porcentaje_nulo, carreras });
 });
 
 const port = process.env.PORT || 3000;
