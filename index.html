@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Votación</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Agregar Voto Manual</h1>
+        <form action="/agregar-voto" method="POST">
+            <input type="text" name="rut" placeholder="RUT" required><br>
+            <select name="carrera" required>
+                <option value="">Seleccione carrera</option>
+                <option value="Naval">Naval</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Electronica">Electronica</option>
+                <option value="Construccion Civil">Construccion Civil</option>
+                <option value="Obras Civiles">Obras Civiles</option>
+                <option value="Mecanica">Mecanica</option>
+                <option value="Informatica">Informatica</option>
+                <option value="Bachillerato">Bachillerato</option>
+            </select><br>
+            <select name="opcion" required>
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+                <option value="Nulo">Nulo</option>
+            </select><br>
+            <input type="password" name="clave" placeholder="Contraseña" required><br>
+            <button type="submit">Agregar Voto</button>
+        </form>
+
+        <h2>Ver Resultados</h2>
+        <form action="/resultados" method="POST">
+            <input type="password" name="clave" placeholder="Contraseña" required>
+            <button type="submit">Mostrar Resultados</button>
+        </form>
+    </div>
+</body>
+</html>

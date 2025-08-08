@@ -1,64 +1,64 @@
-const express = require('express');
-const fileUpload = require('express-fileupload');
-const fs = require('fs');
-const xlsx = require('xlsx');
-const path = require('path');
 
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PASSWORD = 'caf';
+const DATA_FILE = path.join(__dirname, 'data', 'votos.json');
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(fileUpload());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-const VOTES_FILE = path.join(__dirname, 'data', 'votos.json');
-
-function loadVotes() {
-    if (!fs.existsSync(VOTES_FILE)) return [];
-    return JSON.parse(fs.readFileSync(VOTES_FILE, 'utf-8'));
+// Asegura existencia de archivo votos.json
+if (!fs.existsSync(DATA_FILE)) {
+    fs.writeFileSync(DATA_FILE, JSON.stringify([]));
 }
 
-function saveVotes(votes) {
-    fs.writeFileSync(VOTES_FILE, JSON.stringify(votes, null, 2));
-}
+// Ruta principal
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
+// Agregar voto manual
 app.post('/agregar-voto', (req, res) => {
-    const { password, rut, carrera, opcion } = req.body;
-    if (password !== 'caf') return res.status(403).send('Contraseña incorrecta');
+    const { rut, carrera, opcion, clave } = req.body;
+    if (clave !== PASSWORD) return res.send('Contraseña incorrecta.');
 
-    const votos = loadVotes();
+    let votos = JSON.parse(fs.readFileSync(DATA_FILE));
     if (votos.find(v => v.rut === rut)) {
-        return res.status(400).send('Este RUT ya ha votado');
+        return res.send('Este RUT ya ha votado.');
     }
 
     votos.push({ rut, carrera, opcion });
-    saveVotes(votos);
-    res.send('Voto registrado con éxito');
+    fs.writeFileSync(DATA_FILE, JSON.stringify(votos, null, 2));
+    res.send('Voto agregado correctamente.');
 });
 
+// Mostrar resultados
 app.post('/resultados', (req, res) => {
-    const { password } = req.body;
-    if (password !== 'caf') return res.status(403).send('Contraseña incorrecta');
+    const { clave } = req.body;
+    if (clave !== PASSWORD) return res.send('Contraseña incorrecta.');
 
-    const votos = loadVotes();
-    const resumen = {};
-    let total = 0, totalSi = 0, totalNo = 0, totalNulo = 0;
+    const votos = JSON.parse(fs.readFileSync(DATA_FILE));
+    const resultados = {};
 
-    votos.forEach(v => {
-        if (!resumen[v.carrera]) {
-            resumen[v.carrera] = { Si: 0, No: 0, Nulo: 0 };
+    votos.forEach(voto => {
+        if (!resultados[voto.carrera]) {
+            resultados[voto.carrera] = { 'Sí': 0, 'No': 0, 'Nulo': 0 };
         }
-        resumen[v.carrera][v.opcion] = (resumen[v.carrera][v.opcion] || 0) + 1;
-
-        // totales
-        if (v.opcion === "Si") totalSi++;
-        if (v.opcion === "No") totalNo++;
-        if (v.opcion === "Nulo") totalNulo++;
-        total++;
+        resultados[voto.carrera][voto.opcion]++;
     });
 
-    res.json({ resumen, total, totalSi, totalNo, totalNulo });
+    let html = '<h1>Resultados por Carrera</h1>';
+    for (const carrera in resultados) {
+        html += `<h2>${carrera}</h2>`;
+        html += `<p>Sí: ${resultados[carrera]['Sí']}</p>`;
+        html += `<p>No: ${resultados[carrera]['No']}</p>`;
+        html += `<p>Nulo: ${resultados[carrera]['Nulo']}</p>`;
+    }
+    res.send(html);
 });
 
-app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Servidor iniciado en http://localhost:${PORT}`));
