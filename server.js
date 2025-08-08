@@ -1,45 +1,49 @@
 
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const app = express();
-app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
+const PORT = process.env.PORT || 3000;
+
+const votosPath = path.join(__dirname, 'data', 'votos.json');
+const votantesPath = path.join(__dirname, 'data', 'votantes.json');
+
+const carreras = ["Naval", "Industrial", "Electronica", "Construccion Civil", "Obras Civiles", "Mecanica", "Informatica", "Bachillerato"];
+const PASSWORD = 'caf';
+
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (_, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/views/index.html");
+app.post('/voto-manual', (req, res) => {
+    const { password, rut, carrera, opcion } = req.body;
+    if (password !== PASSWORD) return res.json({ message: 'Contraseña incorrecta.' });
+    if (!rut || !carrera || !opcion) return res.json({ message: 'Faltan campos obligatorios.' });
+    let votos = [];
+    if (fs.existsSync(votosPath)) votos = JSON.parse(fs.readFileSync(votosPath));
+    if (votos.find(v => v.rut === rut)) return res.json({ message: 'Este RUT ya votó.' });
+    votos.push({ rut, carrera, opcion });
+    fs.writeFileSync(votosPath, JSON.stringify(votos, null, 2));
+    res.json({ message: 'Voto registrado exitosamente.' });
 });
 
-app.post("/voto-manual", (req, res) => {
-  const { clave, id, carrera, opcion } = req.body;
-  if (clave !== "caf") return res.json({ ok: false });
-
-  let votantes = [];
-  const ruta = "./data/votantes.json";
-  if (fs.existsSync(ruta)) {
-    votantes = JSON.parse(fs.readFileSync(ruta));
-  }
-
-  const index = votantes.findIndex(p => p.id === id);
-
-  if (index !== -1) {
-    if (votantes[index].voto) {
-      return res.json({ ok: false, duplicado: true });
-    } else {
-      votantes[index].voto = true;
-      votantes[index].opcion = opcion;
+app.get('/resultados', (req, res) => {
+    const { password } = req.query;
+    if (password !== PASSWORD) return res.json({ error: 'Contraseña incorrecta.' });
+    let votos = [];
+    if (fs.existsSync(votosPath)) votos = JSON.parse(fs.readFileSync(votosPath));
+    const total = votos.length || 1;
+    const contar = arr => ({
+        si: Math.round(100 * arr.filter(v => v.opcion === 'si').length / arr.length || 0),
+        no: Math.round(100 * arr.filter(v => v.opcion === 'no').length / arr.length || 0),
+        nulo: Math.round(100 * arr.filter(v => v.opcion === 'nulo').length / arr.length || 0),
+    });
+    const porCarrera = {};
+    for (const c of carreras) {
+        const subset = votos.filter(v => v.carrera === c);
+        porCarrera[c] = contar(subset);
     }
-  } else {
-    votantes.push({ id, nombre: "Manual", carrera, voto: true, opcion });
-  }
-
-  fs.writeFileSync(ruta, JSON.stringify(votantes, null, 2));
-  res.json({ ok: true });
+    res.json({ total: contar(votos), porCarrera });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log("Servidor en puerto", port);
-});
+app.listen(PORT, () => console.log('Servidor en puerto', PORT));

@@ -2,66 +2,79 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Registro de Votación</title>
-  <link rel="stylesheet" href="/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Votación</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Registro de Votación</h1>
+    <div class="container">
+        <h1>Registro de Votación</h1>
+        
+        <div class="manual-entry">
+            <h2>Agregar voto manualmente</h2>
+            <input type="password" id="adminPassword" placeholder="Ingrese contraseña">
+            <input type="text" id="rut" placeholder="Ingrese RUT del votante">
+            <label for="carrera">Carrera:</label>
+            <select id="carrera">
+                <option>Naval</option>
+                <option>Industrial</option>
+                <option>Electronica</option>
+                <option>Construccion Civil</option>
+                <option>Obras Civiles</option>
+                <option>Mecanica</option>
+                <option>Informatica</option>
+                <option>Bachillerato</option>
+            </select>
+            <p>Opción:</p>
+            <label><input type="radio" name="opcion" value="si"> Sí</label><br>
+            <label><input type="radio" name="opcion" value="no"> No</label><br>
+            <label><input type="radio" name="opcion" value="nulo"> Nulo</label><br>
+            <button onclick="agregarVoto()">Agregar voto</button>
+            <p id="mensajeVoto"></p>
+        </div>
 
-    <div class="section">
-      <h2>Agregar voto manualmente</h2>
-      <input type="password" id="clave-manual" placeholder="Ingrese contraseña" />
-      <br><br>
-      <input type="text" id="id-manual" placeholder="Ingrese RUT del votante" />
-      <br><br>
-      <label for="carrera-manual">Carrera:</label>
-      <select id="carrera-manual">
-        <option value="Ingeniería">Ingeniería</option>
-        <option value="Derecho">Derecho</option>
-        <option value="Medicina">Medicina</option>
-        <option value="Arquitectura">Arquitectura</option>
-      </select>
-      <br><br>
-      <label>Opción:</label>
-      <label><input type="radio" name="opcion-manual" value="Sí"> Sí</label>
-      <label><input type="radio" name="opcion-manual" value="No"> No</label>
-      <label><input type="radio" name="opcion-manual" value="Nulo"> Nulo</label>
-      <br><br>
-      <button onclick="agregarVotoManual()">Agregar voto</button>
-      <div id="mensaje-manual"></div>
+        <div class="results">
+            <h2>Ver Resultados de la Votación</h2>
+            <input type="password" id="resultPassword" placeholder="Ingrese contraseña">
+            <button onclick="mostrarResultados()">Mostrar Resultados</button>
+            <div id="resultados"></div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    async function agregarVotoManual() {
-      const clave = document.getElementById("clave-manual").value;
-      const id = document.getElementById("id-manual").value.trim();
-      const carrera = document.getElementById("carrera-manual").value;
-      const opcion = document.querySelector('input[name="opcion-manual"]:checked');
-      const mensaje = document.getElementById("mensaje-manual");
+    <script>
+        function agregarVoto() {
+            const password = document.getElementById('adminPassword').value;
+            const rut = document.getElementById('rut').value;
+            const carrera = document.getElementById('carrera').value;
+            const opcion = document.querySelector('input[name=opcion]:checked')?.value;
+            fetch('/voto-manual', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({password, rut, carrera, opcion})
+            }).then(res => res.json()).then(data => {
+                document.getElementById('mensajeVoto').innerText = data.message;
+            });
+        }
 
-      if (!clave || !id || !opcion) {
-        mensaje.innerText = "Debe ingresar todos los campos.";
-        return;
-      }
-
-      const res = await fetch("/voto-manual", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clave, id, carrera, opcion: opcion.value })
-      });
-
-      const data = await res.json();
-      if (data.ok) {
-        mensaje.innerText = "✅ Voto agregado correctamente.";
-      } else if (data.duplicado) {
-        mensaje.innerText = "❌ Esta persona ya votó.";
-      } else {
-        mensaje.innerText = "❌ Clave incorrecta o error al registrar.";
-      }
-    }
-  </script>
+        function mostrarResultados() {
+            const password = document.getElementById('resultPassword').value;
+            fetch('/resultados?password=' + password)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) return alert(data.error);
+                let html = '<h3>Resultados Generales</h3>';
+                html += `<p>Sí: ${data.total.si}%</p>`;
+                html += `<p>No: ${data.total.no}%</p>`;
+                html += `<p>Nulo: ${data.total.nulo}%</p>`;
+                html += '<h3>Resultados por Carrera</h3>';
+                for (const carrera in data.porCarrera) {
+                    const res = data.porCarrera[carrera];
+                    html += `<strong>${carrera}</strong>: Sí ${res.si}%, No ${res.no}%, Nulo ${res.nulo}%<br>`;
+                }
+                document.getElementById('resultados').innerHTML = html;
+            });
+        }
+    </script>
 </body>
 </html>
