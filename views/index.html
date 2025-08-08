@@ -4,46 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <title>Registro de Votación</title>
-    <link rel="stylesheet" href="/public/style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div class="container">
         <h1>Registro de Votación</h1>
 
-        <section>
-            <label for="buscar">Buscar votante por RUT o ID:</label>
-            <input type="text" id="buscar" placeholder="Ingrese RUT o ID">
-            <button id="btnBuscar">Buscar</button>
-        </section>
+        <div class="section">
+            <h2>Buscar votante</h2>
+            <input type="text" id="searchId" placeholder="Ingrese RUT o ID">
+            <button onclick="buscarVotante()">Buscar</button>
+            <div id="resultadoBusqueda"></div>
+        </div>
 
-        <section>
+        <div class="section">
             <h2>Cargar votantes desde Excel</h2>
-            <form action="/cargar-excel" method="POST" enctype="multipart/form-data">
-                <input type="file" name="archivo">
-                <button type="submit">Cargar Excel</button>
-            </form>
+            <input type="file" id="excelFile">
+            <button onclick="cargarExcel()">Cargar Excel</button>
             <p><strong>Formato:</strong> columnas <code>id</code>, <code>nombre</code> y <code>carrera</code></p>
-        </section>
+        </div>
 
-        <section>
+        <div class="section">
             <h2>Ver Resultados de la Votación</h2>
-            <input type="password" id="claveResultados" placeholder="Ingrese contraseña">
-            <button id="btnResultados">Mostrar Resultados</button>
-        </section>
+            <input type="password" id="adminPassResults" placeholder="Ingrese contraseña">
+            <button onclick="mostrarResultados()">Mostrar Resultados</button>
+            <div id="resultados"></div>
+        </div>
 
-        <section>
+        <div class="section">
             <h2>Agregar voto manualmente</h2>
-            <input type="password" id="claveManual" placeholder="Ingrese contraseña"><br>
-            <label for="carreraManual">Carrera:</label>
-            <select id="carreraManual"><option>Cargando...</option></select><br>
+            <input type="password" id="adminPassManual" placeholder="Ingrese contraseña">
+            <label for="carrera">Carrera:</label>
+            <select id="carreraManual"></select>
             <label>Opción:</label>
             <label><input type="radio" name="opcionManual" value="Sí"> Sí</label>
             <label><input type="radio" name="opcionManual" value="No"> No</label>
-            <label><input type="radio" name="opcionManual" value="Nulo"> Nulo</label><br>
-            <button id="btnAgregarVoto">Agregar voto</button>
-        </section>
-
-        <div id="resultado"></div>
+            <label><input type="radio" name="opcionManual" value="Nulo"> Nulo</label>
+            <button onclick="agregarVotoManual()">Agregar voto</button>
+        </div>
     </div>
 </body>
 </html>
