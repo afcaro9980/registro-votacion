@@ -1,47 +1,177 @@
-
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Registro de Votación</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="utf-8" />
+  <title>Registro de Votación</title>
+  <script>
+
+    async function cargarCarreras() {
+      const res = await fetch("/carreras");
+      const data = await res.json();
+      const select = document.getElementById("carrera-manual");
+      select.innerHTML = "";
+      data.forEach(carrera => {
+        const opt = document.createElement("option");
+        opt.value = carrera;
+        opt.textContent = carrera;
+        select.appendChild(opt);
+      });
+    }
+    window.onload = cargarCarreras;
+    let personaEncontrada = false;
+
+    async function buscar() {
+      const id = document.getElementById("id").value;
+      const res = await fetch("/buscar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      const result = document.getElementById("resultado");
+      if (data.encontrado) {
+        personaEncontrada = true;
+        result.innerHTML = `${data.nombre} - Ya votó: ${data.voto ? "✅" : "❌"}`;
+        if (!data.voto) {
+          document.getElementById("opcionesVoto").style.display = "block";
+        } else {
+          document.getElementById("opcionesVoto").style.display = "none";
+        }
+      } else {
+        personaEncontrada = false;
+        result.innerHTML = "No encontrado";
+        document.getElementById("opcionesVoto").style.display = "none";
+      }
+    }
+
+    async function votar() {
+      if (!personaEncontrada) return alert("Debes buscar un ID válido primero.");
+      const id = document.getElementById("id").value;
+      const opcion = document.querySelector('input[name="opcion"]:checked');
+      if (!opcion) return alert("Debes seleccionar una opción.");
+
+      const res = await fetch("/marcar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, opcion: opcion.value })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        alert("Voto registrado");
+        buscar(); // actualizar estado
+      } else {
+        alert("Error al votar");
+      }
+    }
+
+    async function verResultados() {
+      const clave = document.getElementById("clave").value;
+      const res = await fetch("/resultados", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clave })
+      });
+      const data = await res.json();
+      if (!data.autorizado) {
+        alert("Contraseña incorrecta");
+        return;
+      }
+      document.getElementById("resultados").innerHTML = `
+        <p><strong>Total de votos:</strong> ${data.total}</p>
+        <p>✅ Sí: ${data.si} (${data.porcentaje_si}%)</p>
+        <p>❌ No: ${data.no} (${data.porcentaje_no}%)</p>
+      `;
+
+      if (data.carreras) {
+        const tabla = document.createElement("table");
+        tabla.border = "1";
+        tabla.innerHTML = "<tr><th>Carrera</th><th>Sí (%)</th><th>No (%)</th><th>Total votos</th></tr>";
+        for (const carrera in data.carreras) {
+          const c = data.carreras[carrera];
+          tabla.innerHTML += `<tr><td>${carrera}</td><td>${c.porcentaje_si}</td><td>${c.porcentaje_no}</td><td>${c.total}</td></tr>`;
+        }
+        document.getElementById("resultados").appendChild(tabla);
+      }
+    }
+  </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Registro de Votación</h1>
+  <h1>Registro de Votación</h1>
+  <input type="text" id="id" placeholder="Ingrese RUT o ID" />
+  <button onclick="buscar()">Buscar</button>
+  <div id="resultado"></div>
 
-        <div class="section">
-            <h2>Buscar votante</h2>
-            <input type="text" id="searchId" placeholder="Ingrese RUT o ID">
-            <button onclick="buscarVotante()">Buscar</button>
-            <div id="resultadoBusqueda"></div>
-        </div>
+  <div id="opcionesVoto" style="display:none; margin-top:15px;">
+    <h3>¿Está a favor del paro en la facultad?</h3>
+    <label><input type="radio" name="opcion" value="Sí"> Sí</label>
+    <label><input type="radio" name="opcion" value="No"> No</label>
+    <label><input type="radio" name="opcion" value="Nulo"> Nulo</label><br><br>
+    <button onclick="votar()">Votar</button>
+  </div>
 
-        <div class="section">
-            <h2>Cargar votantes desde Excel</h2>
-            <input type="file" id="excelFile">
-            <button onclick="cargarExcel()">Cargar Excel</button>
-            <p><strong>Formato:</strong> columnas <code>id</code>, <code>nombre</code> y <code>carrera</code></p>
-        </div>
+  <hr>
+  <h2>Cargar votantes desde Excel</h2>
+  <form action="/cargar-excel" method="post" enctype="multipart/form-data">
+    <input type="file" name="archivo" accept=".xlsx" required />
+    <button type="submit">Cargar Excel</button>
+  </form>
+  <p><strong>Formato:</strong> columnas <code>id</code>, <code>nombre</code> y <code>carrera</code></p>
 
-        <div class="section">
-            <h2>Ver Resultados de la Votación</h2>
-            <input type="password" id="adminPassResults" placeholder="Ingrese contraseña">
-            <button onclick="mostrarResultados()">Mostrar Resultados</button>
-            <div id="resultados"></div>
-        </div>
+  <hr>
+  <h2>Ver Resultados de la Votación</h2>
+  <input type="password" id="clave" placeholder="Ingrese contraseña" />
+  <button onclick="verResultados()">Mostrar Resultados</button>
+  <div id="resultados"></div>
 
-        <div class="section">
-            <h2>Agregar voto manualmente</h2>
-            <input type="password" id="adminPassManual" placeholder="Ingrese contraseña">
-            <label for="carrera">Carrera:</label>
-            <select id="carreraManual"></select>
-            <label>Opción:</label>
-            <label><input type="radio" name="opcionManual" value="Sí"> Sí</label>
-            <label><input type="radio" name="opcionManual" value="No"> No</label>
-            <label><input type="radio" name="opcionManual" value="Nulo"> Nulo</label>
-            <button onclick="agregarVotoManual()">Agregar voto</button>
-        </div>
-    </div>
+  <hr>
+  <h2>Agregar voto manualmente</h2>
+  <input type="password" id="clave-manual" placeholder="Ingrese contraseña" />
+  <br><br>
+  <label for="carrera-manual">Carrera:</label>
+<select id="carrera-manual"></select>
+    <option value="Derecho">Derecho</option>
+    <option value="Psicología">Psicología</option>
+    <option value="Arquitectura">Arquitectura</option>
+  </select>
+  <br><br>
+  <label>Opción:</label>
+  <label><input type="radio" name="opcion-manual" value="Sí"> Sí</label>
+  <label><input type="radio" name="opcion-manual" value="No"> No</label>
+  <label><input type="radio" name="opcion-manual" value="Nulo"> Nulo</label>
+  <br><br>
+  <button onclick="agregarVotoManual()">Agregar voto</button>
+  <div id="mensaje-manual"></div>
+
+  <script>
+    async function agregarVotoManual() {
+      const clave = document.getElementById("clave-manual").value;
+      const carrera = document.getElementById("carrera-manual").value;
+      const opcion = document.querySelector('input[name="opcion-manual"]:checked');
+      const mensaje = document.getElementById("mensaje-manual");
+
+      if (!clave || !opcion) {
+        mensaje.innerText = "Debe ingresar la clave y seleccionar una opción.";
+        return;
+      }
+
+      const res = await fetch("/voto-manual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clave,
+          carrera,
+          opcion: opcion.value
+        })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        mensaje.innerText = "✅ Voto agregado correctamente.";
+      } else {
+        mensaje.innerText = "❌ Clave incorrecta o error al registrar.";
+      }
+    }
+  </script>
+
 </body>
 </html>
