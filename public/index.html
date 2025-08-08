@@ -1,83 +1,86 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Registro de Votación</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Registro de Votación</title>
 </head>
-<body class="bg-light">
-<div class="container mt-5 p-4 bg-white rounded shadow">
-    <h2 class="mb-4">Registro de Votación</h2>
+<body>
+  <h2>Agregar Voto Manual</h2>
+  <form id="votoForm">
+    <input type="text" name="rut" placeholder="RUT" required><br>
+    <select name="carrera" required>
+      <option value="">Seleccione carrera</option>
+      <option value="Naval">Naval</option>
+      <option value="Industrial">Industrial</option>
+      <option value="Electronica">Electrónica</option>
+      <option value="Construccion Civil">Construcción Civil</option>
+      <option value="Obras Civiles">Obras Civiles</option>
+      <option value="Mecanica">Mecánica</option>
+      <option value="Informatica">Informática</option>
+      <option value="Bachillerato">Bachillerato</option>
+    </select><br>
+    <select name="opcion" required>
+      <option value="Si">Sí</option>
+      <option value="No">No</option>
+      <option value="Nulo">Nulo</option>
+    </select><br>
+    <input type="password" name="password" placeholder="Contraseña" required><br>
+    <button type="submit">Agregar Voto</button>
+  </form>
 
-    <h4>Agregar voto manualmente</h4>
-    <form id="form-voto">
-        <input class="form-control mb-2" name="password" placeholder="Ingrese contraseña" required>
-        <input class="form-control mb-2" name="rut" placeholder="Ingrese RUT del votante" required>
-        <select class="form-select mb-2" name="carrera" required>
-            <option>Naval</option>
-            <option>Industrial</option>
-            <option>Electronica</option>
-            <option>Construccion Civil</option>
-            <option>Obras Civiles</option>
-            <option>Mecanica</option>
-            <option>Informatica</option>
-            <option>Bachillerato</option>
-        </select>
-        <label>Opción:</label><br>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="opcion" value="Si" required> Sí
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="opcion" value="No"> No
-        </div>
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="radio" name="opcion" value="Nulo"> Nulo
-        </div>
-        <button class="btn btn-primary" type="submit">Agregar voto</button>
-    </form>
+  <h2>Ver Resultados</h2>
+  <form id="resultadosForm">
+    <input type="password" name="password" placeholder="Contraseña" required>
+    <button type="submit">Mostrar Resultados</button>
+  </form>
 
-    <hr>
+  <div id="resultados"></div>
 
-    <h4>Ver Resultados</h4>
-    <form id="form-resultados">
-        <input class="form-control mb-2" name="password" placeholder="Ingrese contraseña" required>
-        <button class="btn btn-success" type="submit">Mostrar Resultados</button>
-    </form>
+  <script>
+    document.getElementById("votoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
 
-    <div class="mt-4" id="resultados"></div>
-</div>
+      const res = await fetch("/agregar-voto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-<script>
-document.getElementById('form-voto').onsubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const data = new URLSearchParams(new FormData(form));
-    const res = await fetch('/agregar-voto', {
-        method: 'POST',
-        body: data
+      const text = await res.text();
+      alert(text);
     });
-    const msg = await res.text();
-    alert(msg);
-    form.reset();
-};
 
-document.getElementById('form-resultados').onsubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const data = new URLSearchParams(new FormData(form));
-    const res = await fetch('/resultados', {
-        method: 'POST',
-        body: data
+    document.getElementById("resultadosForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const password = e.target.password.value;
+
+      const res = await fetch("/resultados", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (!res.ok) {
+        alert("Contraseña incorrecta");
+        return;
+      }
+
+      const data = await res.json();
+      const div = document.getElementById("resultados");
+      div.innerHTML = `<h3>Total votos: ${data.total}</h3>
+        <p>Sí: ${data.totalSi}</p>
+        <p>No: ${data.totalNo}</p>
+        <p>Nulo: ${data.totalNulo}</p>
+        <h4>Por Carrera:</h4>`;
+
+      for (const carrera in data.resumen) {
+        const c = data.resumen[carrera];
+        const total = c.Si + c.No + c.Nulo;
+        div.innerHTML += `<p><strong>${carrera}</strong>: Sí (${c.Si}), No (${c.No}), Nulo (${c.Nulo}), Total: ${total}</p>`;
+      }
     });
-    const resultados = await res.json();
-    let html = '<h5>Resultados por carrera:</h5>';
-    for (const carrera in resultados) {
-        const r = resultados[carrera];
-        html += `<strong>${carrera}</strong>: Sí: ${r.Si}, No: ${r.No}, Nulo: ${r.Nulo}<br>`;
-    }
-    document.getElementById('resultados').innerHTML = html;
-};
-</script>
+  </script>
 </body>
 </html>

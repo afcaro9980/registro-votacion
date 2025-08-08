@@ -23,22 +23,9 @@ function saveVotes(votes) {
     fs.writeFileSync(VOTES_FILE, JSON.stringify(votes, null, 2));
 }
 
-app.post('/upload-votantes', (req, res) => {
-    if (!req.files || !req.files.excelFile) {
-        return res.status(400).send('No se subió ningún archivo');
-    }
-
-    const workbook = xlsx.read(req.files.excelFile.data);
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = xlsx.utils.sheet_to_json(sheet);
-
-    fs.writeFileSync(path.join(__dirname, 'data', 'votantes.json'), JSON.stringify(data, null, 2));
-    res.send('Votantes cargados');
-});
-
 app.post('/agregar-voto', (req, res) => {
     const { password, rut, carrera, opcion } = req.body;
-    if (password !== 'clave123') return res.status(403).send('Contraseña incorrecta');
+    if (password !== 'caf') return res.status(403).send('Contraseña incorrecta');
 
     const votos = loadVotes();
     if (votos.find(v => v.rut === rut)) {
@@ -50,21 +37,28 @@ app.post('/agregar-voto', (req, res) => {
     res.send('Voto registrado con éxito');
 });
 
-app.get('/resultados', (req, res) => {
-    const { password } = req.query;
-    if (password !== 'clave123') return res.status(403).send('Contraseña incorrecta');
+app.post('/resultados', (req, res) => {
+    const { password } = req.body;
+    if (password !== 'caf') return res.status(403).send('Contraseña incorrecta');
 
     const votos = loadVotes();
     const resumen = {};
+    let total = 0, totalSi = 0, totalNo = 0, totalNulo = 0;
 
     votos.forEach(v => {
         if (!resumen[v.carrera]) {
             resumen[v.carrera] = { Si: 0, No: 0, Nulo: 0 };
         }
         resumen[v.carrera][v.opcion] = (resumen[v.carrera][v.opcion] || 0) + 1;
+
+        // totales
+        if (v.opcion === "Si") totalSi++;
+        if (v.opcion === "No") totalNo++;
+        if (v.opcion === "Nulo") totalNulo++;
+        total++;
     });
 
-    res.json(resumen);
+    res.json({ resumen, total, totalSi, totalNo, totalNulo });
 });
 
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
