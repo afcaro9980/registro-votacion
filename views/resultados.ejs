@@ -13,10 +13,9 @@
     <thead class="table-light">
       <tr>
         <th>Carrera</th>
-        <th>Paro</th>
-        <th>Suspensión de clases</th>
+        <th>Sí</th>
+        <th>No</th>
         <th>Nulo</th>
-        <th></th>
         <th>Total</th>
       </tr>
     </thead>
@@ -24,10 +23,9 @@
     <% Object.entries(totales).forEach(([carrera, data]) => { %>
       <tr>
         <td><%= carrera %></td>
-        <td><%= data['Paro'] %></td>
-        <td><%= data['Suspensión de clases'] %></td>
+        <td><%= data.Si %></td>
+        <td><%= data.No %></td>
         <td><%= data.Nulo %></td>
-        <td><%= data. %></td>
         <td><%= data.total %></td>
       </tr>
     <% }) %>
