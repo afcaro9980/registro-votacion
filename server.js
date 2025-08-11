@@ -43,21 +43,22 @@ app.post('/resultados', (req, res) => {
 
     const votos = loadVotes();
     const resumen = {};
-    let total = 0, totalParo = 0, totalSuspension = 0;
+    let total = 0, totalParo = 0, totalSuspension = 0, totalNulo = 0;
 
     votos.forEach(v => {
         if (!resumen[v.carrera]) {
-            resumen[v.carrera] = { Paro: 0, 'Suspensión de clases': 0 };
+            resumen[v.carrera] = { Paro: 0, 'Suspensión de clases': 0, Nulo: 0 };
         }
         resumen[v.carrera][v.opcion] = (resumen[v.carrera][v.opcion] || 0) + 1;
 
         // totales
         if (v.opcion === "Paro") totalParo++;
         if (v.opcion === "Suspensión de clases") totalSuspension++;
+        if (v.opcion === "Nulo") totalNulo++;
         total++;
     });
 
-    res.json({ resumen, total, totalParo, totalSuspension });
+    res.json({ resumen, total, totalParo, totalSuspension, totalNulo });
 });
 
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));

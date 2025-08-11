@@ -28,7 +28,7 @@
             </select>
             <p>Opción:</p>
             <label><input type="radio" name="opcion" value="paro"> Paro</label><br>
-            <label><input type="radio" name="opcion" value="suspension"> Suspensión de clases</label><br>
+            <label><input type="radio" name="opcion" value="suspension"> Suspensión de clases / Nulo</label><br>
             <label><input type="radio" name="opcion" value=""> </label><br>
             <button onclick="agregarVoto()">Agregar voto</button>
             <p id="mensajeVoto"></p>
@@ -65,12 +65,12 @@
                 if (data.error) return alert(data.error);
                 let html = '<h3>Resultados Generales</h3>';
                 html += `<p>Paro: ${data.total.paro}%</p>`;
-                html += `<p>Suspensión de clases: ${data.total.suspension}%</p>`;
+                html += `<p>Suspensión de clases / Nulo: ${data.total.suspension}%</p>`;
                 html += `<p>: ${data.total.}%</p>`;
                 html += '<h3>Resultados por Carrera</h3>';
                 for (const carrera in data.porCarrera) {
                     const res = data.porCarrera[carrera];
-                    html += `<strong>${carrera}</strong>: Paro ${res.paro}%, Suspensión de clases ${res.suspension}%,  ${res.}%<br>`;
+                    html += `<strong>${carrera}</strong>: Paro ${res.paro}%, Suspensión de clases / Nulo ${res.suspension}%,  ${res.}%<br>`;
                 }
                 document.getElementById('resultados').innerHTML = html;
             });
