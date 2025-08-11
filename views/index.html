@@ -27,9 +27,9 @@
                 <option>Bachillerato</option>
             </select>
             <p>Opción:</p>
-            <label><input type="radio" name="opcion" value="si"> Sí</label><br>
-            <label><input type="radio" name="opcion" value="no"> No</label><br>
-            <label><input type="radio" name="opcion" value="nulo"> Nulo</label><br>
+            <label><input type="radio" name="opcion" value="paro"> Paro</label><br>
+            <label><input type="radio" name="opcion" value="suspension"> Suspensión de clases</label><br>
+            <label><input type="radio" name="opcion" value=""> </label><br>
             <button onclick="agregarVoto()">Agregar voto</button>
             <p id="mensajeVoto"></p>
         </div>
@@ -64,13 +64,13 @@
             .then(data => {
                 if (data.error) return alert(data.error);
                 let html = '<h3>Resultados Generales</h3>';
-                html += `<p>Sí: ${data.total.si}%</p>`;
-                html += `<p>No: ${data.total.no}%</p>`;
-                html += `<p>Nulo: ${data.total.nulo}%</p>`;
+                html += `<p>Paro: ${data.total.paro}%</p>`;
+                html += `<p>Suspensión de clases: ${data.total.suspension}%</p>`;
+                html += `<p>: ${data.total.}%</p>`;
                 html += '<h3>Resultados por Carrera</h3>';
                 for (const carrera in data.porCarrera) {
                     const res = data.porCarrera[carrera];
-                    html += `<strong>${carrera}</strong>: Sí ${res.si}%, No ${res.no}%, Nulo ${res.nulo}%<br>`;
+                    html += `<strong>${carrera}</strong>: Paro ${res.paro}%, Suspensión de clases ${res.suspension}%,  ${res.}%<br>`;
                 }
                 document.getElementById('resultados').innerHTML = html;
             });

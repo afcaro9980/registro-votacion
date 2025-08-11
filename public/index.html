@@ -21,9 +21,9 @@
       <option value="Bachillerato">Acustica</option>
     </select><br>
     <select name="opcion" required>
-      <option value="Si">Sí</option>
-      <option value="No">No</option>
-      <option value="Nulo">Nulo</option>
+      <option value="Si">Paro</option>
+      <option value="No">Suspensión de clases</option>
+      <option value=""></option>
     </select><br>
     <input type="password" name="password" placeholder="Contraseña" required><br>
     <button type="submit">Agregar Voto</button>
@@ -71,15 +71,15 @@
       const data = await res.json();
       const div = document.getElementById("resultados");
       div.innerHTML = `<h3>Total votos: ${data.total}</h3>
-        <p>Sí: ${data.totalSi}</p>
+        <p>Paro: ${data.totalSi}</p>
         <p>No: ${data.totalNo}</p>
-        <p>Nulo: ${data.totalNulo}</p>
+        <p>: ${data.total}</p>
         <h4>Por Carrera:</h4>`;
 
       for (const carrera in data.resumen) {
         const c = data.resumen[carrera];
-        const total = c.Si + c.No + c.Nulo;
-        div.innerHTML += `<p><strong>${carrera}</strong>: Sí (${c.Si}), No (${c.No}), Nulo (${c.Nulo}), Total: ${total}</p>`;
+        const total = c.Si + c.No + c.;
+        div.innerHTML += `<p><strong>${carrera}</strong>: Paro (${c.Si}), No (${c.No}),  (${c.}), Total: ${total}</p>`;
       }
     });
   </script>
